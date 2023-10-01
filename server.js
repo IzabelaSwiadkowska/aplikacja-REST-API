@@ -1,6 +1,6 @@
 const app = require('./app');
 const mongoose = require('mongoose');
-const uriDb = require('./config');
+const { uriDb } = require('./config');
 
 const connection = mongoose.connect(uriDb, {
   useNewUrlParser: true,

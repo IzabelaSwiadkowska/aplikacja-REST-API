@@ -1,5 +1,7 @@
+/* eslint-disable no-useless-return */
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const bcrypt = require('bcryptjs');
 
 const user = new Schema({
   password: {
@@ -21,5 +23,16 @@ const user = new Schema({
     default: null,
   },
 });
+
+user.pre('save', async function () {
+  if (!this.password) {
+    return;
+  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
+user.methods.validatePassword = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
 const User = mongoose.model('user', user);
 module.exports = User;
