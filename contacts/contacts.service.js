@@ -1,50 +1,77 @@
 const Contact = require('./contacts.model');
 
-const listContacts = async () => {
+const listContacts = async (owner, page, limit, favorite) => {
   try {
-    return await Contact.find();
+    const filter = { owner };
+    if (favorite !== undefined) {
+      filter.favorite = favorite;
+    }
+    const result = await Contact.find(filter)
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
+    const count = await Contact.count(filter);
+    return {
+      result,
+      count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+    };
+  } catch (e) {
+    console.error(e.message);
+    throw e;
+  }
+};
+
+const findContactbyId = async (owner, id) => {
+  try {
+    return await Contact.findOne({ _id: id, owner });
   } catch (e) {
     console.error(e.message);
   }
 };
 
-const findContactbyId = async (id) => {
+const addContact = async (owner, name, email, phone) => {
   try {
-    return await Contact.findById(id);
+    return await Contact.create({ owner: owner, name, email, phone });
   } catch (e) {
     console.error(e.message);
+    throw e;
   }
 };
 
-const addContact = async (name, email, phone) => {
+const updateContact = async (owner, contactId, contact) => {
   try {
-    return await Contact.create({ name, email, phone });
+    return await Contact.findByIdAndUpdate(
+      { _id: contactId, owner: owner },
+      contact,
+      { new: true }
+    );
   } catch (e) {
     console.error(e.message);
+    throw e;
   }
 };
 
-const updateContact = async (contactId, contact) => {
+const removeContact = async (owner, contactId) => {
   try {
-    return await Contact.findByIdAndUpdate(contactId, contact, { new: true });
+    return await Contact.findByIdAndRemove({ _id: contactId, owner });
   } catch (e) {
     console.error(e.message);
+    return false;
   }
 };
 
-const removeContact = async (contactId) => {
+const updateStatusContact = async (owner, contactId, contact) => {
   try {
-    return await Contact.findByIdAndRemove(contactId);
+    return await Contact.findByIdAndUpdate(
+      { _id: contactId, owner: owner },
+      contact,
+      { new: true }
+    );
   } catch (e) {
     console.error(e.message);
-  }
-};
-
-const updateStatusContact = async (contactId, contact) => {
-  try {
-    return await Contact.findByIdAndUpdate(contactId, contact, { new: true });
-  } catch (e) {
-    console.error(e.message);
+    throw e;
   }
 };
 module.exports = {

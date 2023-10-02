@@ -1,8 +1,14 @@
 const service = require('./contacts.service');
 
-const getContactsHandler = async (_, res, next) => {
+const getContactsHandler = async (req, res, next) => {
   try {
-    const contactList = await service.listContacts();
+    const { page = 1, limit = 20, favorite } = req.query;
+    const contactList = await service.listContacts(
+      req.user,
+      page,
+      limit,
+      favorite
+    );
     res.json(contactList);
   } catch (e) {
     console.error(e);
@@ -12,7 +18,10 @@ const getContactsHandler = async (_, res, next) => {
 
 const getContactbyIdHandler = async (req, res, next) => {
   try {
-    const contact = await service.findContactbyId(req.params.contactId);
+    const contact = await service.findContactbyId(
+      req.user,
+      req.params.contactId
+    );
     if (contact) {
       res.json(contact);
     } else {
@@ -26,7 +35,7 @@ const getContactbyIdHandler = async (req, res, next) => {
 const createNewContactHandler = async (req, res, next) => {
   try {
     const { name, email, phone } = req.body;
-    const newContact = await service.addContact(name, email, phone);
+    const newContact = await service.addContact(req.user, name, email, phone);
     if (newContact) {
       res.status(201).send({ newContact });
     }
@@ -39,7 +48,11 @@ const createNewContactHandler = async (req, res, next) => {
 const updateContactHandler = async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    const updatedContact = await service.updateContact(contactId, req.body);
+    const updatedContact = await service.updateContact(
+      req.user,
+      contactId,
+      req.body
+    );
     if (updatedContact) {
       res.status(200).send(updatedContact);
     } else {
@@ -54,7 +67,7 @@ const updateContactHandler = async (req, res, next) => {
 const removeContactHandler = async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    const isDeleted = await service.removeContact(contactId);
+    const isDeleted = await service.removeContact(req.user, contactId);
     if (isDeleted) {
       res.status(200).json({ message: 'contact deleted' });
     } else {
@@ -70,8 +83,9 @@ const UpdateStatusContactHandler = async (req, res, next) => {
   try {
     const { contactId } = req.params;
     const updatedStatusContact = await service.updateStatusContact(
+      req.user,
       contactId,
-      req.body
+      req.body.favorite
     );
     if (updatedStatusContact) {
       res.status(200).json({ updatedStatusContact });

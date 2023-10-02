@@ -31,8 +31,10 @@ user.pre('save', async function () {
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
-user.methods.validatePassword = async function (password) {
-  return await bcrypt.compare(password, this.password);
+user.methods.validatePassword = function (password) {
+  console.log(password, this.password);
+  console.log('compare', bcrypt.compare(password, this.password));
+  return bcrypt.compare(password, this.password);
 };
 const User = mongoose.model('user', user);
 module.exports = User;

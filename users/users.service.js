@@ -19,7 +19,7 @@ const createUser = async ({ email, password }) => {
     throw new UnknownDatabaseError();
   }
 };
-const getUser = async ({ email, password }) => {
+const getUser = async (email) => {
   try {
     return await User.findOne({ email });
   } catch (e) {
@@ -27,7 +27,7 @@ const getUser = async ({ email, password }) => {
     throw new UnknownDatabaseError();
   }
 };
-const updateUser = async ({ email }, userData) => {
+const updateUser = async (email, userData) => {
   try {
     return await User.findOneAndUpdate({ email }, userData);
   } catch (e) {
@@ -35,8 +35,18 @@ const updateUser = async ({ email }, userData) => {
     throw new UnknownDatabaseError();
   }
 };
+
+const updateSubscription = async (email, subscription) => {
+  try {
+    return await User.findOneAndUpdate(email, subscription, {
+      new: true,
+    });
+  } catch (error) {}
+};
+
 module.exports = {
   getUser,
   createUser,
   updateUser,
+  updateSubscription,
 };

@@ -7,6 +7,17 @@ const userSchema = Joi.object({
   subscription: Joi.string().optional(),
 });
 
+const subscriptionSchema = Joi.object({
+  subscription: Joi.string().valid('starter', 'pro', 'business').required(),
+});
+
+const subscriptionValidationMiddleware = (req, res, next) => {
+  const { error } = subscriptionSchema.validate(req.body);
+  if (error) {
+    return res.status(400).send({ error: error.message });
+  }
+  return next();
+};
 const usersValidationMiddleware = (req, res, next) => {
   const contact = req.body;
 
@@ -17,4 +28,7 @@ const usersValidationMiddleware = (req, res, next) => {
   return next();
 };
 
-module.exports = usersValidationMiddleware;
+module.exports = {
+  usersValidationMiddleware,
+  subscriptionValidationMiddleware,
+};
