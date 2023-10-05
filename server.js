@@ -1,8 +1,6 @@
-const app = require("./app");
-const mongoose = require("mongoose");
-require("dotenv").config();
-
-const uriDb = process.env.DATABASE_URI;
+const app = require('./app');
+const mongoose = require('mongoose');
+const { uriDb } = require('./config');
 
 const connection = mongoose.connect(uriDb, {
   useNewUrlParser: true,
@@ -11,9 +9,9 @@ const connection = mongoose.connect(uriDb, {
 
 connection
   .then(() => {
-    console.log("Database connection successful.");
+    console.log('Database connection successful.');
     app.listen(3000, () => {
-      console.log("Server running. Use our API on port: 3000");
+      console.log('Server running. Use our API on port: 3000');
     });
   })
   .catch((err) => {
