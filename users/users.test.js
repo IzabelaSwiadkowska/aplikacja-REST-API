@@ -20,7 +20,7 @@ describe('singup controller', () => {
     password: 'h!741ds',
   };
 
-  test('Should create user and return him', async () => {
+  test('Should create a  user and return him', async () => {
     const resSignup = await supertest(app)
       .post('/users/signup')
       .send(credentials);
@@ -37,7 +37,7 @@ describe('login controller', () => {
     email: 'izabel@gmail.com',
     password: 'h!741ds',
   };
-  test('Should  login a user and return status code 200', async () => {
+  test('Should login a user and return status code 200', async () => {
     const resLogin = await supertest(app)
       .post('/users/login')
       .send(credentials);
