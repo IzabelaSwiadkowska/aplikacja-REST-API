@@ -3,10 +3,12 @@ const {
   DuplicatedKeyError,
   UnknownDatabaseError,
 } = require('../errorsHandlers');
+const gravatar = require('gravatar');
 
 const createUser = async ({ email, password }) => {
   try {
-    const newUser = await User.create({ email, password });
+    const avatarURL = gravatar.url(`${email}`, { default: 'identicon' }, true);
+    const newUser = await User.create({ email, password, avatarURL });
     return newUser;
   } catch (e) {
     console.error(e);
@@ -41,12 +43,26 @@ const updateSubscription = async (email, subscription) => {
     return await User.findOneAndUpdate(email, subscription, {
       new: true,
     });
-  } catch (error) {}
+  } catch (e) {
+    console.error(e);
+    throw new UnknownDatabaseError();
+  }
 };
 
+const updateUserAvatar = async (email, avatarURL) => {
+  try {
+    return await User.findOneAndUpdate(email, avatarURL, {
+      new: true,
+    });
+  } catch (e) {
+    console.error(e);
+    throw new UnknownDatabaseError();
+  }
+};
 module.exports = {
   getUser,
   createUser,
   updateUser,
   updateSubscription,
+  updateUserAvatar,
 };
