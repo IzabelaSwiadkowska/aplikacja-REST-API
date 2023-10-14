@@ -4,6 +4,7 @@ const controller = require('./users.controllers');
 const {
   usersValidationMiddleware,
   subscriptionValidationMiddleware,
+  secondMailingValidationMiddleware,
 } = require('./users.validators');
 const { authMiddleware } = require('../auth/auth.middleware');
 const multer = require('multer');
@@ -46,6 +47,12 @@ usersRouter.patch(
   authMiddleware,
   upload.single('avatar'),
   controller.updateUserAvatarHandler
+);
+usersRouter.get('/verify/:verificationToken', controller.verifyHandler);
+usersRouter.post(
+  '/verify',
+  secondMailingValidationMiddleware,
+  controller.resendVerificationHandler
 );
 
 module.exports = usersRouter;

@@ -12,7 +12,7 @@ const authMiddleware = async (req, res, next) => {
       throw new Error('AUthorization token is missing.');
     }
     const { email } = auth.verifyToken(token);
-    const userEntity = await service.getUser(email);
+    const userEntity = await service.getUser({ email });
     if (!userEntity || userEntity.token !== token) {
       throw new Error('Token is invalid.');
     }

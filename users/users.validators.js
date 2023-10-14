@@ -11,6 +11,16 @@ const subscriptionSchema = Joi.object({
   subscription: Joi.string().valid('starter', 'pro', 'business').required(),
 });
 
+const secondValidationSchema = Joi.object({
+  email: Joi.string().required(),
+});
+
+const secondMailingValidationMiddleware = (req, res, next) => {
+  const { error } = secondValidationSchema.validate(req.body);
+  if (error) {
+    return res.status(400).send({ message: 'missing required field email' });
+  }
+};
 const subscriptionValidationMiddleware = (req, res, next) => {
   const { error } = subscriptionSchema.validate(req.body);
   if (error) {
@@ -31,4 +41,5 @@ const usersValidationMiddleware = (req, res, next) => {
 module.exports = {
   usersValidationMiddleware,
   subscriptionValidationMiddleware,
+  secondMailingValidationMiddleware,
 };
