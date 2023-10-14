@@ -1,6 +1,6 @@
 FROM node:18.18.0-alpine
 
-ENV PORT 4200
+ENV PORT 3000
 
 RUN mkdir /app
 WORKDIR /app
@@ -11,7 +11,7 @@ WORKDIR /app
 
 ADD . /app/
 
-EXPOSE 4200
+EXPOSE 3000
 
 CMD [ "node" , "server.js"]
 
