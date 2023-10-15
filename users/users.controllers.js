@@ -7,15 +7,21 @@ const { v4 } = require('uuid');
 const path = require('path');
 const fs = require('fs/promises');
 const User = require('./users.model');
+const { sendUserVerificationMail } = require('./users.mailer.service');
 
 const signupHandler = async (req, res, next) => {
   try {
     const result = await service.createUser(req.body);
+
+    await sendUserVerificationMail(result.email, result.verificationToken);
+
     return res.status(201).send({
       user: {
         email: result.email,
         subscription: result.subscription,
         avatarURL: result.avatarURL,
+        verify: result.verify,
+        verificationToken: result.verificationToken,
       },
     });
   } catch (e) {
@@ -28,14 +34,16 @@ const signupHandler = async (req, res, next) => {
 };
 const loginHandler = async (req, res, next) => {
   try {
-    const userEntity = await service.getUser(req.body.email);
+    const userEntity = await service.getUser({ email: req.body.email });
     const isUserPasswordValid = await userEntity?.validatePassword(
       req.body.password
     );
     if (!userEntity || !isUserPasswordValid) {
       return res.status(401).send({ message: 'Wrong credentials.' });
     }
-
+    if (!userEntity.verify) {
+      return res.status(403).send({ message: 'User is not verified' });
+    }
     const userPayload = {
       email: userEntity.email,
       subscription: userEntity.subscription,
@@ -117,6 +125,48 @@ const updateUserAvatarHandler = async (req, res, next) => {
     next(e);
   }
 };
+
+const verifyHandler = async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+    const user = await service.getUser({ verificationToken });
+    if (!user) {
+      return res.status(404).send({ message: 'User not found.' });
+    }
+
+    if (user.verify) {
+      return res.status(400).send({ message: 'User is already verified.' });
+    }
+
+    await service.updateUser(user.email, {
+      verify: true,
+      verificationToken: null,
+    });
+    return res.status(200).send({ message: 'Verification successful' });
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
+};
+
+const resendVerificationHandler = async (req, res, next) => {
+  try {
+    const user = await service.getUser({ email: req.body.email });
+    if (!user) {
+      return res.status(404).send({ message: 'User does not exist.' });
+    }
+    if (user.verify) {
+      return res
+        .status(400)
+        .send({ message: 'Verification has already been passed' });
+    }
+    await sendUserVerificationMail(user.email, user.verificationToken);
+    return res.status(200).send({ message: 'Verification email sent' });
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
+};
 module.exports = {
   signupHandler,
   loginHandler,
@@ -124,4 +174,6 @@ module.exports = {
   currentHandler,
   subscriptionHandler,
   updateUserAvatarHandler,
+  verifyHandler,
+  resendVerificationHandler,
 };
